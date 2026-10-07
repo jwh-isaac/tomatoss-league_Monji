@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E4432D">
+<title>토마토스 리그 점수 입력</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tomato:#E4432D; --tomato-deep:#B8301D; --leaf:#2E8B3D;
+  --wood:#6A4630; --wood-ink:#FBEFDF;
+  --paper:#FFF8EC; --card:#FFFFFF; --field:#FFFDF8; --line:#EADCC8;
+  --ink:#3A2418; --muted:#8C7466; --warn-bg:#FFE7C2; --warn-ink:#6A4630;
+  --display:"Jua","IBM Plex Sans KR",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --tomato-deep:#FF7A62; --paper:#1E1410; --card:#2A1C15; --field:#33231B; --line:#45322A;
+    --ink:#F4E6D6; --muted:#B39A88; --warn-bg:#4A331F; --warn-ink:#FFDDB0;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid rgba(228,67,45,.45);outline-offset:2px}
+
+/* header */
+.top{background:var(--tomato);color:#fff;padding-top:env(safe-area-inset-top,0px)}
+.top-inner{max-width:560px;margin:0 auto;padding:18px 16px 4px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.1;margin:0}
+.season{margin:4px 0 0;font-size:14px;opacity:.9}
+.icon-btn{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:transparent;color:#fff;font-size:20px;display:grid;place-items:center;flex:none}
+.drip{display:block;width:100%;height:26px;margin-bottom:4px}
+
+.wrap{max-width:560px;margin:0 auto;padding:0 16px 150px}
+
+/* tabs */
+.tabs{display:flex;gap:4px;background:var(--line);padding:4px;border-radius:14px;margin:6px 0 22px}
+.tab{flex:1;border:0;background:transparent;height:42px;border-radius:10px;font-weight:500;color:var(--muted)}
+.tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 0 rgba(58,36,24,.14)}
+
+section[hidden]{display:none}
+.block{margin-bottom:26px}
+h2{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.2;margin:0 0 4px;color:var(--tomato-deep)}
+.hint{margin:0 0 12px;font-size:14px;color:var(--muted)}
+
+/* fields */
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.meta .full{grid-column:1/-1}
+.f > span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=date],input[type=url],input[type=password],input.num{
+  width:100%;height:50px;border:1.5px solid var(--line);border-radius:12px;background:var(--field);
+  font-size:17px;font-weight:500;padding:0 12px;-webkit-appearance:none;appearance:none}
+input:focus{outline:none;border-color:var(--tomato);box-shadow:0 0 0 3px rgba(228,67,45,.22)}
+input.num{text-align:center;font-family:var(--display);font-weight:400;font-size:24px;padding:0 4px}
+
+.stepper{display:grid;grid-template-columns:50px 1fr 50px;border:1.5px solid var(--line);border-radius:12px;background:var(--field);overflow:hidden;height:50px}
+.stepper button{border:0;background:transparent;font-size:24px;line-height:1;color:var(--tomato-deep)}
+.stepper output,.stepper input{display:grid;place-items:center;font-family:var(--display);font-size:24px;border:0;background:transparent;text-align:center;width:100%;height:100%;padding:0}
+.stepper input:focus{box-shadow:none}
+
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{min-width:50px;height:46px;padding:0 14px;border-radius:23px;border:1.5px solid var(--line);background:var(--field);font-family:var(--display);font-size:20px}
+.chip[aria-pressed="true"]{background:var(--tomato);border-color:var(--tomato);color:#fff}
+
+/* player cards */
+.player{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.p-head{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+.seat{width:40px;height:40px;border-radius:50%;background:var(--tomato);color:#fff;display:grid;place-items:center;font-family:var(--display);font-size:20px;flex:none;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.p-head input{flex:1}
+.scores{display:grid;grid-template-columns:1fr 1fr 76px;gap:8px;align-items:end}
+.tag{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);margin-bottom:5px}
+.tag i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tag .normal{background:var(--wood)}
+.tag .quick{background:var(--tomato)}
+.total{text-align:center}
+.total span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.total b{display:block;height:50px;line-height:50px;font-family:var(--display);font-weight:400;font-size:30px}
+.qc{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;font-size:14px;color:var(--muted)}
+.qc .stepper{width:150px;height:44px;grid-template-columns:44px 1fr 44px}
+.hand{margin-top:12px;padding:12px;border-radius:12px;background:rgba(46,139,61,.12)}
+.hand[hidden]{display:none}
+.hand p{margin:0 0 8px;font-size:14px}
+
+/* result plank */
+.plank{
+  border-radius:16px;padding:8px 16px;color:var(--wood-ink);
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.07),rgba(0,0,0,.1)),
+    repeating-linear-gradient(90deg,transparent 0 46px,rgba(0,0,0,.07) 46px 48px),
+    var(--wood);
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
+.plank-empty,.plank-note{margin:8px 0;font-size:14px;opacity:.85}
+.pl-row{display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px dashed rgba(251,239,223,.25)}
+.pl-row:last-of-type{border-bottom:0}
+.pl-rank{font-family:var(--display);font-size:20px}
+.pl-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pl-total{font-family:var(--display);font-size:20px}
+.pl-pts{min-width:64px;text-align:center;border-radius:14px;padding:3px 10px;background:rgba(251,239,223,.16);font-size:14px;font-weight:700}
+.pl-row.win .pl-pts{background:var(--tomato);color:#fff}
+
+/* bottom bar */
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1.5px solid var(--line);padding:10px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.bar-inner{max-width:560px;margin:0 auto}
+.primary{width:100%;height:56px;border:0;border-radius:16px;background:var(--tomato);color:#fff;font-family:var(--display);font-size:21px;box-shadow:inset 0 -4px 0 rgba(0,0,0,.16)}
+.primary:disabled{opacity:.55}
+.secondary{height:48px;padding:0 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--field);font-weight:500}
+.queue{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;padding:8px 10px 8px 14px;border-radius:12px;background:var(--warn-bg);color:var(--warn-ink);font-size:14px}
+.queue[hidden]{display:none}
+.queue div{display:flex;gap:6px}
+.queue button{height:36px;padding:0 12px;border-radius:10px;border:0;background:rgba(0,0,0,.08);font-size:14px;font-weight:500;color:inherit}
+
+.notice{padding:14px;border-radius:14px;background:var(--warn-bg);color:var(--warn-ink);margin-bottom:20px;font-size:15px}
+.notice[hidden]{display:none}
+.notice button{margin-top:10px}
+
+/* standings */
+.st-meta{margin:0 0 12px;font-size:14px;color:var(--muted)}
+.st-row{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px 0;border-bottom:1.5px solid var(--line)}
+.st-rank{font-family:var(--display);font-size:26px;text-align:center}
+.st-row.top3 .st-rank{color:var(--tomato-deep)}
+.st-name{font-weight:700;font-size:17px}
+.st-sub{font-size:13px;color:var(--muted)}
+.st-pts{font-family:var(--display);font-size:28px;text-align:right;line-height:1}
+.st-pts small{font-family:var(--body);font-size:13px;color:var(--muted);margin-left:2px}
+.st-row.out{opacity:.55}
+.badge{display:inline-block;margin-left:6px;font-size:12px;font-weight:500;padding:1px 8px;border-radius:10px;border:1px solid var(--line);color:var(--muted);vertical-align:2px}
+.awards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+.award{border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--card)}
+.award span{display:block;font-size:13px;color:var(--muted)}
+.award b{display:block;font-size:17px;margin-top:2px}
+.award em{font-style:normal;font-family:var(--display);font-size:22px;color:var(--tomato-deep)}
+.muted{color:var(--muted)}
+.row-actions{display:flex;justify-content:flex-end;margin-bottom:8px}
+
+/* dialog */
+dialog{border:0;border-radius:20px;padding:20px;width:min(92vw,420px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(30,15,10,.55)}
+dialog h3{font-family:var(--display);font-weight:400;font-size:24px;margin:0 0 6px}
+dialog .f{display:block;margin-top:14px}
+.d-actions{display:flex;gap:8px;margin-top:20px}
+.d-actions button{flex:1}
+.d-actions .primary{height:48px;font-size:18px}
+.confirm-list{margin:12px 0 0;padding:0;list-style:none}
+.confirm-list li{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+.test-result{margin:10px 0 0;font-size:14px}
+
+/* toast */
+.toast{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translate(-50%,-150%);max-width:min(92vw,480px);padding:12px 16px;border-radius:14px;background:var(--leaf);color:#fff;font-weight:500;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.2);transition:transform .25s ease;z-index:50}
+.toast.err{background:var(--tomato-deep);color:#fff}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div>
+      <h1>토마토스 리그</h1>
+      <p class="season" id="seasonLabel">동호회 미니대회 점수 입력</p>
+    </div>
+    <button class="icon-btn" id="openSettings" aria-label="연결 설정">⚙</button>
+  </div>
+</header>
+<svg class="drip" viewBox="0 0 400 28" preserveAspectRatio="none" aria-hidden="true">
+  <path fill="#E4432D" d="M0 0H400V10C388 10 386 24 376 24S364 10 352 10H300C290 10 289 18 281 18S272 10 262 10H190C176 10 175 27 163 27S150 10 136 10H90C82 10 81 17 75 17S68 10 60 10H0Z"/>
+</svg>
+
+<main class="wrap">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabInputBtn" aria-selected="true" aria-controls="tabInput">점수 입력</button>
+    <button class="tab" role="tab" id="tabStandBtn" aria-selected="false" aria-controls="tabStand">시즌 순위</button>
+  </div>
+
+  <!-- 점수 입력 -->
+  <section id="tabInput" role="tabpanel">
+    <div class="notice" id="noUrlNotice" hidden>
+      스프레드시트가 아직 연결되지 않았습니다. 연결 설정에서 웹 앱 주소와 입력 코드를 넣어 주세요.
+      <div><button class="secondary" data-open-settings>연결 설정 열기</button></div>
+    </div>
+
+    <div class="block">
+      <h2>모임 정보</h2>
+      <p class="hint">같은 모임의 게임은 모두 같은 회차로 입력합니다. 한 모임에서 여러 판을 해도 모두 누적됩니다.</p>
+      <div class="meta">
+        <label class="f"><span>날짜</span><input type="date" id="date"></label>
+        <div class="f"><span>회차</span>
+          <div class="stepper">
+            <button type="button" id="roundDown" aria-label="회차 줄이기">−</button>
+            <input class="num" id="round" inputmode="numeric" aria-label="회차">
+            <button type="button" id="roundUp" aria-label="회차 늘리기">+</button>
+          </div>
+        </div>
+        <div class="f full"><span>게임 인원 (1위 승점 = 인원수)</span><div class="chips" id="sizes"></div></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <h2>참가자 점수</h2>
+      <p class="hint">좌석 1번이 시작 플레이어입니다. 개인 보드 왼쪽 카드는 일반 점수, 오른쪽 카드는 잽싸게 점수로 입력하세요.</p>
+      <datalist id="playerNames"></datalist>
+      <div id="players"></div>
+    </div>
+
+    <div class="block">
+      <h2>이 게임 결과</h2>
+      <div class="plank" id="plank" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- 시즌 순위 -->
+  <section id="tabStand" role="tabpanel" hidden>
+    <div class="row-actions"><button class="secondary" id="reloadStand">새로 불러오기</button></div>
+    <div id="standings"></div>
+  </section>
+</main>
+
+<div class="bar" id="bar">
+  <div class="bar-inner">
+    <div class="queue" id="queue" hidden>
+      <span id="queueText"></span>
+      <div><button id="queueRetry">다시 보내기</button><button id="queueClear">비우기</button></div>
+    </div>
+    <button class="primary" id="submit">기록 보내기</button>
+  </div>
+</div>
+
+<dialog id="confirmDlg">
+  <h3 id="confirmTitle">기록을 보낼까요?</h3>
+  <p class="muted" style="margin:0">보낸 뒤에는 스프레드시트에서만 고칠 수 있습니다.</p>
+  <ul class="confirm-list" id="confirmList"></ul>
+  <div class="d-actions">
+    <button class="secondary" id="confirmCancel">수정하기</button>
+    <button class="primary" id="confirmOk">기록 보내기</button>
+  </div>
+</dialog>
+
+<dialog id="settingsDlg">
+  <h3>연결 설정</h3>
+  <p class="muted" style="margin:0;font-size:14px">이 기기에만 저장됩니다.</p>
+  <label class="f"><span>웹 앱 주소</span><input type="url" id="setUrl" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></label>
+  <label class="f"><span>입력 코드</span><input type="password" id="setCode" autocomplete="off"></label>
+  <p class="test-result" id="testResult"></p>
+  <div class="d-actions">
+    <button class="secondary" id="testConn">연결 확인</button>
+    <button class="primary" id="saveSettings">저장</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* 배포 후 Apps Script 웹 앱 주소를 넣어 두면 기기마다 주소를 입력하지 않아도 됩니다.
+   입력 코드는 여기에 넣지 마세요. (깃허브에 공개됩니다) */
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbyegMl04xe7jClCShE_ghSRJfakpVi8KBBisvEdJo6Xwp8VKlofD1SjfkrTzSWfi8Zx/exec';
+
+const SIZES = [2,3,4];
+const LS = { url:'tl_api_url', code:'tl_passcode', queue:'tl_queue', draft:'tl_draft', round:'tl_round', names:'tl_names' };
+const $ = s => document.querySelector(s);
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+function todayStr(){ const d = new Date(), z = n => String(n).padStart(2,'0'); return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+function toInt(v){ const n = parseInt(v,10); return Number.isNaN(n) ? 0 : n; }
+function filled(v){ return v !== '' && v !== null && v !== undefined; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function uid(){ return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function blankPlayer(){ return { name:'', normal:'', quick:'', quickCards:0, hand:'' }; }
+function apiUrl(){ return (store.get(LS.url,'') || DEFAULT_API_URL || '').trim(); }
+
+/* ---------- state ---------- */
+const draft = store.get(LS.draft, null);
+const fresh = draft && draft.savedAt && (Date.now() - draft.savedAt) < 12*60*60*1000;
+if (fresh) delete draft.table;
+const state = fresh ? draft : { date: todayStr(), round: store.get(LS.round, 1), size:4, players:[] };
+function fitPlayers(){ while(state.players.length < state.size) state.players.push(blankPlayer()); state.players.length = state.size; }
+function saveDraft(){ store.set(LS.draft, Object.assign({}, state, { savedAt: Date.now() })); }
+
+/* ---------- scoring ---------- */
+function compute(players){
+  const n = players.length;
+  const list = players.map((p,i) => ({ ...p, seat:i+1, total: toInt(p.normal)+toInt(p.quick), handN: toInt(p.hand) }));
+  const complete = players.every(p => filled(p.normal) && filled(p.quick));
+  const top = Math.max(...list.map(p => p.total));
+  const topTied = list.filter(p => p.total === top).length > 1;
+  list.forEach(a => {
+    a.rank = 1 + list.filter(b => b.total > a.total || (b.total === a.total && b.handN > a.handN)).length;
+    a.points = a.rank === 1 ? n : 1;
+    a.inTopTie = complete && topTied && a.total === top;
+  });
+  return { list, complete };
+}
+
+/* ---------- render: meta ---------- */
+function renderMeta(){
+  $('#date').value = state.date;
+  $('#round').value = state.round;
+  $('#sizes').innerHTML = SIZES.map(s => `<button type="button" class="chip" data-size="${s}" aria-pressed="${state.size===s}">${s}명</button>`).join('');
+}
+
+/* ---------- render: players ---------- */
+function renderPlayers(){
+  fitPlayers();
+  $('#players').innerHTML = state.players.map((p,i) => `
+    <div class="player">
+      <div class="p-head">
+        <div class="seat" aria-hidden="true">${i+1}</div>
+        <input type="text" list="playerNames" placeholder="${i+1}번 좌석 이름" aria-label="${i+1}번 좌석 이름"
+               data-i="${i}" data-k="name" value="${esc(p.name)}" autocomplete="off">
+      </div>
+      <div class="scores">
+        <label><span class="tag"><i class="normal"></i>일반 점수</span>
+          <input class="num" inputmode="numeric" pattern="[0-9]*" data-i="${i}" data-k="normal" value="${esc(p.normal)}"></label>
+        <label><span class="tag"><i class="quick"></i>잽싸게 점수</span>
+          <input class="num" inputmode="numeric" pattern="[0-9]*" data-i="${i}" data-k="quick" value="${esc(p.quick)}"></label>
+        <div class="total"><span>총점</span><b id="total-${i}">0</b></div>
+      </div>
+      <div class="qc">
+        <span>잽싸게로 가져온 목표 카드</span>
+        <div class="stepper">
+          <button type="button" data-step="-1" data-i="${i}" aria-label="줄이기">−</button>
+          <output id="qc-${i}">${p.quickCards||0}</output>
+          <button type="button" data-step="1" data-i="${i}" aria-label="늘리기">+</button>
+        </div>
+      </div>
+      <div class="hand" id="hand-${i}" hidden>
+        <p>총점이 같습니다. 손에 남은 토마토 카드 숫자 합을 입력하세요. 합도 같으면 공동 1위입니다.</p>
+        <input class="num" inputmode="numeric" pattern="[0-9]*" data-i="${i}" data-k="hand" value="${esc(p.hand)}" aria-label="손에 남은 카드 숫자 합">
+      </div>
+    </div>`).join('');
+  updateDerived();
+}
+
+function updateDerived(){
+  const { list, complete } = compute(state.players);
+  list.forEach((p,i) => {
+    $('#total-'+i).textContent = (filled(state.players[i].normal) || filled(state.players[i].quick)) ? p.total : 0;
+    $('#hand-'+i).hidden = !p.inTopTie;
+  });
+  const el = $('#plank');
+  if (!complete){
+    el.innerHTML = '<p class="plank-empty">모든 참가자의 일반 점수와 잽싸게 점수를 입력하면 순위와 승점이 계산됩니다.</p>';
+    return;
+  }
+  const sorted = [...list].sort((a,b) => a.rank-b.rank || a.seat-b.seat);
+  const winners = sorted.filter(p => p.rank === 1).length;
+  el.innerHTML = sorted.map(p => `
+    <div class="pl-row ${p.rank===1?'win':''}">
+      <span class="pl-rank">${p.rank}위</span>
+      <span class="pl-name">${esc(p.name || p.seat+'번 좌석')}</span>
+      <span class="pl-total">${p.total}</span>
+      <span class="pl-pts">승점 ${p.points}</span>
+    </div>`).join('')
+    + (winners > 1 ? `<p class="plank-note">공동 1위입니다. ${winners}명 모두 승점 ${state.size}점을 받습니다.</p>` : '');
+}
+
+/* ---------- events: meta ---------- */
+$('#date').addEventListener('change', e => { state.date = e.target.value; saveDraft(); });
+$('#round').addEventListener('input', e => { const v = e.target.value.replace(/[^0-9]/g,''); e.target.value = v; state.round = Math.max(1, toInt(v)||1); saveDraft(); });
+$('#round').addEventListener('blur', e => { e.target.value = state.round; });
+$('#roundDown').addEventListener('click', () => { state.round = Math.max(1, state.round-1); $('#round').value = state.round; saveDraft(); });
+$('#roundUp').addEventListener('click', () => { state.round += 1; $('#round').value = state.round; saveDraft(); });
+$('#sizes').addEventListener('click', e => { const b = e.target.closest('[data-size]'); if(!b) return; state.size = +b.dataset.size; renderMeta(); renderPlayers(); saveDraft(); });
+
+/* ---------- events: players ---------- */
+$('#players').addEventListener('input', e => {
+  const t = e.target, k = t.dataset.k; if (!k) return;
+  const i = +t.dataset.i;
+  let v = t.value;
+  if (k !== 'name'){ v = v.replace(/[^0-9]/g,'').slice(0,3); if (t.value !== v) t.value = v; }
+  state.players[i][k] = v;
+  updateDerived(); saveDraft();
+});
+$('#players').addEventListener('click', e => {
+  const b = e.target.closest('[data-step]'); if (!b) return;
+  const i = +b.dataset.i, p = state.players[i];
+  p.quickCards = Math.max(0, Math.min(30, (p.quickCards||0) + (+b.dataset.step)));
+  $('#qc-'+i).textContent = p.quickCards; saveDraft();
+});
+
+/* ---------- validation & payload ---------- */
+function validate(){
+  if (!state.date) return '날짜를 입력해 주세요.';
+  if (!(state.round >= 1)) return '회차를 확인해 주세요.';
+  const names = state.players.map(p => p.name.trim());
+  const miss = names.findIndex(n => !n);
+  if (miss >= 0) return (miss+1)+'번 좌석 이름을 입력해 주세요.';
+  if (new Set(names).size !== names.length) return '같은 이름이 두 번 입력되어 있습니다.';
+  const i = state.players.findIndex(p => !filled(p.normal) || !filled(p.quick));
+  if (i >= 0) return names[i]+'의 일반 점수와 잽싸게 점수를 모두 입력해 주세요.';
+  return '';
+}
+function buildPayload(){
+  return {
+    passcode: store.get(LS.code,''),
+    submissionId: uid(),
+    date: state.date, round: state.round,
+    players: state.players.map(p => ({ name:p.name.trim(), normal:toInt(p.normal), quick:toInt(p.quick), quickCards:p.quickCards||0, hand: filled(p.hand) ? toInt(p.hand) : '' })),
+    force: false
+  };
+}
+
+/* ---------- network ---------- */
+async function post(payload){
+  const url = apiUrl(); if (!url) throw new Error('NO_URL');
+  const res = await fetch(url, { method:'POST', body: JSON.stringify(payload) }); // text/plain → 사전 요청 없이 전송
+  try { return await res.json(); } catch(e){ throw new Error('BAD_RESPONSE'); }
+}
+async function getData(url){
+  const res = await fetch(url + (url.includes('?') ? '&' : '?') + 'action=standings');
+  const d = await res.json();
+  if (!d.ok) throw new Error('BAD_RESPONSE');
+  return d;
+}
+
+/* ---------- submit ---------- */
+$('#submit').addEventListener('click', () => {
+  const err = validate(); if (err){ toast(err, true); return; }
+  if (!apiUrl()){ toast('연결 설정에서 웹 앱 주소를 먼저 입력해 주세요.', true); openSettings(); return; }
+  if (!store.get(LS.code,'')){ toast('연결 설정에서 입력 코드를 먼저 입력해 주세요.', true); openSettings(); return; }
+  const { list } = compute(state.players);
+  $('#confirmTitle').textContent = `${state.round}회차 기록을 보낼까요?`;
+  $('#confirmList').innerHTML = [...list].sort((a,b)=>a.rank-b.rank||a.seat-b.seat)
+    .map(p => `<li><span>${p.rank}위 ${esc(p.name)} (${p.total}점)</span><b>승점 ${p.points}</b></li>`).join('');
+  $('#confirmDlg').showModal();
+});
+$('#confirmCancel').addEventListener('click', () => $('#confirmDlg').close());
+$('#confirmOk').addEventListener('click', () => { $('#confirmDlg').close(); submit(buildPayload()); });
+
+async function submit(payload){
+  setBusy(true);
+  try {
+    const d = await post(payload);
+    if (d.ok) onSaved(payload);
+    else if (d.code === 'SAME_GAME'){
+      setBusy(false);
+      if (confirm(d.message + ' 새 게임으로 한 번 더 저장할까요?')){ payload.force = true; return submit(payload); }
+    }
+    else toast(d.message || '기록을 보내지 못했습니다.', true);
+  } catch(e){
+    if (e.message === 'BAD_RESPONSE') toast('스프레드시트 응답을 읽지 못했습니다. 웹 앱 주소와 배포 권한(모든 사용자)을 확인해 주세요.', true);
+    else { queueAdd(payload); onSaved(payload, true); }
+  } finally { setBusy(false); }
+}
+function onSaved(payload, queued){
+  toast(queued ? '연결이 불안정해 이 기기에 보관했습니다. 연결되면 다시 보내 주세요.' : `${payload.round}회차 기록을 보냈습니다.`, !!queued);
+  addNames(payload.players.map(p => p.name));
+  store.set(LS.round, payload.round);
+  state.players = [];
+  fitPlayers(); renderMeta(); renderPlayers(); saveDraft();
+  window.scrollTo({ top:0, behavior:'smooth' });
+  if (!queued) loadStandings(true);
+}
+function setBusy(b){ const btn = $('#submit'); btn.disabled = b; btn.textContent = b ? '보내는 중' : '기록 보내기'; }
+
+/* ---------- offline queue ---------- */
+function queueAdd(p){ const q = store.get(LS.queue, []); q.push(p); store.set(LS.queue, q); renderQueue(); }
+function renderQueue(){
+  const q = store.get(LS.queue, []);
+  $('#queue').hidden = !q.length;
+  $('#queueText').textContent = `보내지 못한 기록 ${q.length}건`;
+}
+async function flushQueue(){
+  const q = store.get(LS.queue, []); if (!q.length) return;
+  const remain = []; let sent = 0, msg = '';
+  for (const item of q){
+    try { const d = await post(item); if (d.ok) sent++; else { remain.push(item); msg = d.message; } }
+    catch(e){ remain.push(item); msg = '아직 스프레드시트에 연결되지 않습니다.'; }
+  }
+  store.set(LS.queue, remain); renderQueue();
+  if (sent) { toast(`보관한 기록 ${sent}건을 보냈습니다.`); loadStandings(true); }
+  else if (msg) toast(msg, true);
+}
+$('#queueRetry').addEventListener('click', flushQueue);
+$('#queueClear').addEventListener('click', () => {
+  if (confirm('보내지 못한 기록을 이 기기에서 삭제할까요? 스프레드시트에는 저장되지 않습니다.')){ store.set(LS.queue, []); renderQueue(); }
+});
+window.addEventListener('online', flushQueue);
+
+/* ---------- names ---------- */
+function addNames(list){
+  const all = Array.from(new Set([...(store.get(LS.names, [])), ...list])).filter(Boolean).sort((a,b)=>a.localeCompare(b,'ko'));
+  store.set(LS.names, all);
+  $('#playerNames').innerHTML = all.map(n => `<option value="${esc(n)}">`).join('');
+}
+
+/* ---------- standings ---------- */
+async function loadStandings(silent){
+  const box = $('#standings'), url = apiUrl();
+  if (!url){ box.innerHTML = '<p class="muted">연결 설정에서 웹 앱 주소를 입력하면 시즌 순위가 표시됩니다.</p>'; return; }
+  if (!silent) box.innerHTML = '<p class="muted">순위를 불러오는 중입니다.</p>';
+  try {
+    const d = await getData(url);
+    $('#seasonLabel').textContent = `시즌 ${d.season} 점수 입력`;
+    addNames(d.players || []);
+    renderStandings(d.standings);
+  } catch(e){
+    box.innerHTML = '<p class="muted">순위를 불러오지 못했습니다. 연결 상태를 확인한 뒤 새로 불러오세요.</p>';
+  }
+}
+function renderStandings(st){
+  const box = $('#standings');
+  if (!st.list.length){ box.innerHTML = '<p class="muted">아직 기록이 없습니다. 첫 게임 결과를 보내면 순위가 표시됩니다.</p>'; return; }
+  const rows = st.list.map(m => `
+    <div class="st-row ${m.rank<=3?'top3':''} ${m.eligible?'':'out'}">
+      <div class="st-rank">${m.rank}</div>
+      <div>
+        <div class="st-name">${esc(m.name)}${m.eligible?'':'<span class="badge">자격 미달</span>'}</div>
+        <div class="st-sub">1위 ${m.wins}회, ${m.games}판(${m.attended}회차 참가), 잽싸게 ${m.quickCards}장</div>
+      </div>
+      <div class="st-pts">${m.points}<small>점</small></div>
+    </div>`).join('');
+  const quick = [...st.list].sort((a,b)=>b.quickCards-a.quickCards)[0];
+  const best = [...st.list].sort((a,b)=>b.best-a.best)[0];
+  box.innerHTML = `
+    <p class="st-meta">시즌 ${esc(st.season)}, 진행 ${st.totalRounds}회. 최종 순위는 ${st.required}회 이상 참가자만 인정됩니다.</p>
+    ${rows}
+    <div class="awards">
+      <div class="award"><span>잽싸게 장인</span><b>${quick.quickCards ? esc(quick.name) : '아직 없음'}</b>${quick.quickCards ? `<em>${quick.quickCards}장</em>` : ''}</div>
+      <div class="award"><span>단일 최고 점수</span><b>${esc(best.name)}</b><em>${best.best}점</em></div>
+    </div>`;
+}
+$('#reloadStand').addEventListener('click', () => loadStandings(false));
+
+/* ---------- tabs ---------- */
+function showTab(which){
+  const input = which === 'input';
+  $('#tabInput').hidden = !input; $('#tabStand').hidden = input;
+  $('#tabInputBtn').setAttribute('aria-selected', input); $('#tabStandBtn').setAttribute('aria-selected', !input);
+  $('#bar').hidden = !input;
+  if (!input) loadStandings(false);
+}
+$('#tabInputBtn').addEventListener('click', () => showTab('input'));
+$('#tabStandBtn').addEventListener('click', () => showTab('stand'));
+
+/* ---------- settings ---------- */
+function openSettings(){
+  $('#setUrl').value = store.get(LS.url,'') || DEFAULT_API_URL;
+  $('#setCode').value = store.get(LS.code,'');
+  $('#testResult').textContent = '';
+  $('#settingsDlg').showModal();
+}
+$('#openSettings').addEventListener('click', openSettings);
+document.querySelectorAll('[data-open-settings]').forEach(b => b.addEventListener('click', openSettings));
+$('#testConn').addEventListener('click', async () => {
+  const url = $('#setUrl').value.trim(), out = $('#testResult');
+  if (!url){ out.textContent = '웹 앱 주소를 입력해 주세요.'; return; }
+  out.textContent = '확인하는 중입니다.';
+  try { const d = await getData(url); out.textContent = `연결되었습니다. 현재 시즌 ${d.season}, 기록된 참가자 ${d.players.length}명.`; }
+  catch(e){ out.textContent = '연결하지 못했습니다. 주소가 /exec로 끝나는지, 액세스 권한이 "모든 사용자"인지 확인해 주세요.'; }
+});
+$('#saveSettings').addEventListener('click', () => {
+  store.set(LS.url, $('#setUrl').value.trim());
+  store.set(LS.code, $('#setCode').value.trim());
+  $('#settingsDlg').close();
+  $('#noUrlNotice').hidden = !!apiUrl();
+  toast('연결 설정을 저장했습니다.');
+  loadStandings(true); flushQueue();
+});
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg, err){
+  const t = $('#toast'); t.textContent = msg; t.classList.toggle('err', !!err); t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), err ? 4200 : 2600);
+}
+
+/* ---------- init ---------- */
+fitPlayers(); renderMeta(); renderPlayers(); renderQueue();
+addNames([]);
+$('#noUrlNotice').hidden = !!apiUrl();
+if (apiUrl()){ loadStandings(true); flushQueue(); }
+</script>
+</body>
+</html>
