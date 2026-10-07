@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>토마토스 몬지 리그</title>
+<meta name="theme-color" content="#e8443a">
+<style>
+  :root{
+    --red:#e8443a; --red-d:#c2312a; --red-l:#fde8e6;
+    --bg:#fff8f5; --card:#ffffff; --text:#2b1d1a; --sub:#8a706b; --line:#f0dcd7;
+    --gold-l:#fff3cc; --gold-d:#8a5f00;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR",sans-serif}
+  header{background:var(--red);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:5}
+  header h1{margin:0;font-size:20px;letter-spacing:-.3px}
+  header p{margin:4px 0 0;font-size:12px;opacity:.88;line-height:1.5}
+  nav{display:flex;background:var(--red-d);position:sticky;top:0}
+  nav button{flex:1;border:0;background:none;color:#ffd9d5;padding:11px 0;font-size:15px;font-weight:600}
+  nav button.on{color:#fff;box-shadow:inset 0 -3px 0 #fff}
+  main{max-width:560px;margin:0 auto;padding:14px 16px 100px}
+  section{display:none} section.on{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+  .card h2{font-size:14px;margin:0 0 10px;color:var(--sub);font-weight:600}
+  input{font-family:inherit}
+  input[type=date],input[type=text]{width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .row{display:flex;gap:8px}
+  .btn{border:0;border-radius:10px;padding:10px 14px;font-size:15px;font-weight:600;background:var(--red-l);color:var(--red-d);white-space:nowrap}
+  .btn.primary{background:var(--red);color:#fff}
+  .btn:disabled{opacity:.45}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 13px;font-size:15px}
+  .chip.sel{background:var(--red);border-color:var(--red);color:#fff}
+  .chip.off{opacity:.35}
+  .hint{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5}
+
+  .prow{display:grid;grid-template-columns:1fr 92px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+  .prow:last-child{border-bottom:0}
+  .prow .nm{font-size:16px;font-weight:700;display:flex;align-items:center;gap:6px;min-width:0}
+  .prow .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prow input{width:100%;font-size:18px;font-weight:700;text-align:center;padding:8px 4px;border:1.5px solid var(--line);border-radius:10px}
+  .prow input:focus{outline:none;border-color:var(--red)}
+  .prow .hand{grid-column:1 / -1;display:none;align-items:center;justify-content:space-between;gap:8px;background:var(--gold-l);border-radius:10px;padding:8px 10px}
+  .prow .hand label{font-size:13px;color:var(--gold-d);font-weight:600}
+  .prow .hand input{width:92px;font-size:16px;border-color:#f0d58a}
+  .prow.tie .hand{display:flex}
+  .prow.win .nm::before{content:"👑"}
+  .badge{font-size:11px;font-weight:700;border-radius:6px;padding:2px 6px;background:var(--red-l);color:var(--red-d)}
+  .prow.win .badge{background:var(--gold-l);color:var(--gold-d)}
+
+  .result{display:none;margin-top:12px;border-radius:12px;padding:12px;font-size:14px;line-height:1.6;background:var(--gold-l);color:#6b4a00}
+  .result b{color:var(--text)}
+
+  .bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .bar .btn{width:100%;max-width:528px;display:block;margin:0 auto;padding:14px;font-size:17px}
+
+  table{width:100%;border-collapse:collapse;font-size:15px}
+  th{font-size:12px;color:var(--sub);font-weight:600;text-align:right;padding:6px 3px;border-bottom:1px solid var(--line)}
+  th:nth-child(2),td:nth-child(2){text-align:left}
+  td{padding:10px 3px;border-bottom:1px solid var(--line);text-align:right}
+  td.rk{text-align:center;width:32px;font-weight:700}
+  tr.top1 td.rk{color:#c99400} tr.top2 td.rk{color:#8c8c8c} tr.top3 td.rk{color:#b5703a}
+  td.pt{font-weight:800;color:var(--red-d)}
+  td.av{color:var(--sub);font-size:13px}
+
+  .game{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .game:last-child{border-bottom:0}
+  .game .meta{font-size:12px;color:var(--sub)}
+  .game .who{font-size:14px;margin-top:4px;line-height:1.6}
+  .game .who .w{font-weight:700;color:var(--gold-d)}
+  .game .tb{font-size:12px;color:var(--gold-d);margin-top:2px}
+  .tag{display:inline-block;font-size:11px;font-weight:700;background:var(--gold-l);color:var(--gold-d);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+  .del{border:0;background:none;color:var(--sub);font-size:13px;padding:4px 6px;flex-shrink:0}
+
+  .toast{position:fixed;left:50%;top:80px;transform:translateX(-50%);background:#2b1d1a;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:20;max-width:90%;text-align:center}
+  .toast.show{opacity:.95}
+  .empty{color:var(--sub);text-align:center;padding:20px 0;font-size:14px}
+  .sum{display:flex;gap:8px;margin-bottom:12px}
+  .sum div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+  .sum b{display:block;font-size:20px;color:var(--red-d)} .sum span{font-size:12px;color:var(--sub)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🍅 토마토스 몬지 리그</h1>
+  <p>리그 승점: 1위 = 참가 인원수 · 나머지 = 1점<br>동점: 손패 숫자 합계 높은 사람 1위 · 그것도 같으면 공동 1위</p>
+</header>
+<nav>
+  <button data-tab="input" class="on">점수 입력</button>
+  <button data-tab="rank">순위</button>
+  <button data-tab="log">기록</button>
+</nav>
+
+<main>
+  <!-- 입력 -->
+  <section id="input" class="on">
+    <div class="card">
+      <h2>모임일자</h2>
+      <input type="date" id="date">
+    </div>
+
+    <div class="card">
+      <h2>① 참가자 선택 (2~4명) · <span id="cnt">0</span>/4</h2>
+      <div class="chips" id="known"></div>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="newName" placeholder="새 참가자 이름" maxlength="20" autocomplete="off">
+        <button class="btn" id="addBtn">추가</button>
+      </div>
+      <div class="hint">같은 테이블이 연속으로 하면 참가자 선택이 유지됩니다. 닉네임은 매번 같게 입력해 주세요.</div>
+    </div>
+
+    <div class="card">
+      <h2>② 최종 점수 입력 (일반 + 잽싸게 던지기)</h2>
+      <div id="plist"></div>
+      <div class="empty" id="pEmpty">참가자를 먼저 선택하세요</div>
+      <div class="result" id="result"></div>
+    </div>
+  </section>
+
+  <!-- 순위 -->
+  <section id="rank">
+    <div class="sum">
+      <div><b id="sGames">-</b><span>총 판수</span></div>
+      <div><b id="sPlayers">-</b><span>참가 인원</span></div>
+    </div>
+    <div class="card">
+      <table>
+        <thead><tr><th style="text-align:center">#</th><th>플레이어</th><th>승점</th><th>1위</th><th>판수</th><th>평균</th></tr></thead>
+        <tbody id="rankBody"></tbody>
+      </table>
+      <div class="empty" id="rankEmpty">아직 기록이 없습니다</div>
+      <div class="hint">순위 동점 시: 1위 횟수 → 적은 판수 순 · 평균 = 평균 게임 점수</div>
+    </div>
+    <button class="btn" style="width:100%" onclick="load(true)">새로고침</button>
+  </section>
+
+  <!-- 기록 -->
+  <section id="log">
+    <div class="card">
+      <h2>최근 50판</h2>
+      <div id="logList"></div>
+      <div class="empty" id="logEmpty">아직 기록이 없습니다</div>
+    </div>
+  </section>
+</main>
+
+<div class="bar" id="bar"><button class="btn primary" id="saveBtn" disabled>저장</button></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ▼▼ Apps Script 웹앱 배포 URL 붙여넣기 ▼▼ */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-F28nl-hyZs0zKy9NfTp_h0ye4Nas4XtsTJwzYrin_UJhB_GxqNR65YgYSkI8VIvi/exec';
+/* ▲▲ ▲▲ */
+const MAX_PLAYERS = 4, MIN_PLAYERS = 2;
+
+const $ = id => document.getElementById(id);
+let state = { players: [], ranking: [], recent: [], totalGames: 0 };
+let selected = [];          // 이번 판 참가자 (순서 유지)
+let scores = {};            // 이름 → 최종 점수(문자열)
+let hands = {};             // 이름 → 손패 합계(문자열)
+let localNames = [];
+try { localNames = JSON.parse(localStorage.getItem('monjiNames') || '[]'); } catch (e) {}
+
+$('date').value = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const isNum = v => v !== '' && v !== undefined && Number.isFinite(Number(v)) && Number(v) >= 0;
+
+/* 탭 */
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('section').forEach(s => s.classList.toggle('on', s.id === b.dataset.tab));
+  $('bar').style.display = b.dataset.tab === 'input' ? '' : 'none';
+  if (b.dataset.tab !== 'input') load();
+});
+
+/* ① 참가자 */
+function allNames() {
+  return [...new Set([...state.players, ...localNames, ...selected])].sort((a, b) => a.localeCompare(b, 'ko'));
+}
+function renderKnown() {
+  const names = allNames(), full = selected.length >= MAX_PLAYERS;
+  $('cnt').textContent = selected.length;
+  $('known').innerHTML = names.length
+    ? names.map(n => {
+        const sel = selected.includes(n);
+        return `<button class="chip ${sel ? 'sel' : ''} ${!sel && full ? 'off' : ''}" data-n="${esc(n)}">${esc(n)}</button>`;
+      }).join('')
+    : '<span class="hint" style="margin:0">첫 모임입니다. 아래에서 이름을 추가하세요.</span>';
+  $('known').querySelectorAll('.chip').forEach(c => c.onclick = () => toggle(c.dataset.n));
+}
+function toggle(n) {
+  if (selected.includes(n)) {
+    selected = selected.filter(x => x !== n); delete scores[n]; delete hands[n];
+  } else {
+    if (selected.length >= MAX_PLAYERS) return toast('토마토스는 최대 4명입니다');
+    selected.push(n);
+  }
+  renderInput();
+}
+function addName() {
+  const n = $('newName').value.trim().replace(/\s+/g, ' ');
+  if (!n) return;
+  if (!selected.includes(n) && selected.length >= MAX_PLAYERS) return toast('토마토스는 최대 4명입니다');
+  if (!localNames.includes(n)) {
+    localNames.push(n);
+    try { localStorage.setItem('monjiNames', JSON.stringify(localNames)); } catch (e) {}
+  }
+  if (!selected.includes(n)) selected.push(n);
+  $('newName').value = '';
+  renderInput();
+}
+$('addBtn').onclick = addName;
+$('newName').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addName(); } });
+
+/* ② 점수 입력 (입력 중 포커스 유지를 위해 참가자 변경 시에만 다시 그림) */
+function renderPlayers() {
+  $('pEmpty').style.display = selected.length ? 'none' : '';
+  $('plist').innerHTML = selected.map(p => `
+    <div class="prow" data-n="${esc(p)}">
+      <div class="nm"><span>${esc(p)}</span><em class="badge"></em></div>
+      <input class="sc" type="number" inputmode="numeric" min="0" placeholder="점수" value="${esc(scores[p] ?? '')}">
+      <div class="hand"><label>🍅 손에 남은 토마토 카드 숫자 합계</label>
+        <input class="hs" type="number" inputmode="numeric" min="0" placeholder="합계" value="${esc(hands[p] ?? '')}"></div>
+    </div>`).join('');
+  $('plist').querySelectorAll('.prow').forEach(row => {
+    const n = row.dataset.n;
+    row.querySelector('.sc').oninput = e => { scores[n] = e.target.value.trim(); updateResult(); };
+    row.querySelector('.hs').oninput = e => { hands[n] = e.target.value.trim(); updateResult(); };
+  });
+  updateResult();
+}
+
+/* 규칙서 기준 판정 */
+function judge() {
+  const n = selected.length;
+  if (n < MIN_PLAYERS) return { ready: false, msg: '참가자 2~4명을 선택하세요' };
+  if (selected.some(p => !isNum(scores[p]))) return { ready: false, msg: '모든 참가자의 점수를 입력하세요' };
+  const max = Math.max(...selected.map(p => Number(scores[p])));
+  const top = selected.filter(p => Number(scores[p]) === max);
+  if (top.length === 1) return { ready: true, winners: top, tied: [], verdict: '단독1위' };
+  if (top.some(p => !isNum(hands[p]))) return { ready: false, tied: top, msg: '동점자 손패 합계를 입력하세요' };
+  const maxH = Math.max(...top.map(p => Number(hands[p])));
+  const winners = top.filter(p => Number(hands[p]) === maxH);
+  return { ready: true, winners, tied: top, verdict: winners.length > 1 ? '공동1위' : '동점-손패승' };
+}
+
+function updateResult() {
+  const n = selected.length, r = judge();
+  const tied = r.tied || [], winners = r.ready ? r.winners : [];
+
+  $('plist').querySelectorAll('.prow').forEach(row => {
+    const p = row.dataset.n, w = winners.includes(p);
+    row.classList.toggle('tie', tied.includes(p));
+    row.classList.toggle('win', w);
+    row.querySelector('.badge').textContent = r.ready ? (w ? `+${n}점` : '+1점') : '';
+  });
+
+  const box = $('result');
+  if (!r.ready && !tied.length) box.style.display = 'none';
+  else {
+    box.style.display = 'block';
+    const tiedTxt = tied.map(esc).join(', ');
+    if (!r.ready) box.innerHTML = `<b>${tiedTxt}</b> 점수 동점입니다.<br>손에 남은 토마토 카드 숫자 합계를 입력하세요. <b>합계가 높은 사람</b>이 1위입니다.`;
+    else if (r.verdict === '단독1위') box.innerHTML = `👑 1위 <b>${esc(winners[0])}</b> (+${n}점) · 나머지 +1점`;
+    else if (r.verdict === '동점-손패승') box.innerHTML = `점수 동점(${tiedTxt}) → 손패 합계로 판정<br>👑 1위 <b>${esc(winners[0])}</b> (+${n}점) · 나머지 +1점`;
+    else box.innerHTML = `점수·손패 합계 모두 동점 → <b>공동 1위</b><br>👑 <b>${winners.map(esc).join(', ')}</b> 각 +${n}점 · 나머지 +1점`;
+  }
+
+  const btn = $('saveBtn');
+  btn.disabled = !r.ready;
+  btn.textContent = r.ready
+    ? `저장 (${n}인 · ${r.verdict === '공동1위' ? '공동 1위 ' + winners.join(', ') : winners[0] + ' 1위'})`
+    : r.msg;
+  return r;
+}
+
+function renderInput() { renderKnown(); renderPlayers(); }
+
+/* 서버 통신 */
+async function api(body) {
+  if (SCRIPT_URL.startsWith('PASTE')) throw new Error('SCRIPT_URL을 설정하세요');
+  const res = body
+    ? await fetch(SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) })
+    : await fetch(SCRIPT_URL + '?t=' + Date.now());
+  const data = await res.json();
+  if (data.ok === false) throw new Error(data.error || '오류');
+  return data;
+}
+let loading = false;
+async function load(showToast) {
+  if (loading) return; loading = true;
+  try { state = await api(); renderAll(); if (showToast) toast('최신 순위로 갱신했습니다'); }
+  catch (e) { toast('불러오기 실패: ' + e.message); }
+  finally { loading = false; }
+}
+
+$('saveBtn').onclick = async () => {
+  const r = judge();
+  if (!r.ready) return;
+  const n = selected.length;
+  const lines = [...selected].sort((a, b) => scores[b] - scores[a])
+    .map(p => `${r.winners.includes(p) ? '👑 ' : ''}${p} ${scores[p]}점${r.tied.includes(p) ? ` (손패 ${hands[p]})` : ''} → +${r.winners.includes(p) ? n : 1}`);
+  const head = r.verdict === '공동1위' ? '[공동 1위]' : r.verdict === '동점-손패승' ? '[동점 → 손패 합계 판정]' : '';
+  if (!confirm(`${$('date').value} · ${n}인 게임 ${head}\n\n${lines.join('\n')}\n\n저장할까요?`)) return;
+
+  const btn = $('saveBtn'); btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    state = await api({
+      date: $('date').value,
+      players: selected.map(p => ({ name: p, score: Number(scores[p]), hand: r.tied.includes(p) ? Number(hands[p]) : '' }))
+    });
+    scores = {}; hands = {};   // 같은 멤버로 다음 판 바로 입력
+    renderAll();
+    toast('저장 완료! 다음 판 점수를 입력하세요');
+  } catch (e) { toast('저장 실패: ' + e.message); updateResult(); }
+};
+
+async function delGame(id, label) {
+  if (!confirm(`이 판을 삭제할까요?\n${label}`)) return;
+  try { state = await api({ action: 'delete', gameId: id }); renderAll(); toast('삭제했습니다'); }
+  catch (e) { toast('삭제 실패: ' + e.message); }
+}
+
+/* 순위·기록 렌더 */
+function renderAll() {
+  renderInput();
+  $('sGames').textContent = state.totalGames;
+  $('sPlayers').textContent = state.ranking.length;
+  $('rankEmpty').style.display = state.ranking.length ? 'none' : '';
+  $('rankBody').innerHTML = state.ranking.map(s =>
+    `<tr class="${s.rank <= 3 ? 'top' + s.rank : ''}"><td class="rk">${s.rank}</td><td>${esc(s.name)}</td><td class="pt">${s.points}</td><td>${s.wins}</td><td>${s.games}</td><td class="av">${s.avg}</td></tr>`
+  ).join('');
+
+  $('logEmpty').style.display = state.recent.length ? 'none' : '';
+  $('logList').innerHTML = state.recent.map(g => {
+    const tag = g.verdict === '공동1위' ? '<span class="tag">공동 1위</span>'
+              : g.verdict === '동점-손패승' ? '<span class="tag">동점·손패 판정</span>' : '';
+    const who = g.players.map(p => g.winners.includes(p.name)
+      ? `<span class="w">👑 ${esc(p.name)} ${p.score}</span>` : `${esc(p.name)} ${p.score}`).join(' · ');
+    const tiedP = g.players.filter(p => p.hand !== null && p.hand !== undefined);
+    const tb = tiedP.length ? `<div class="tb">🍅 손패 합계: ${tiedP.map(p => `${esc(p.name)} ${p.hand}`).join(' / ')}</div>` : '';
+    const label = `${g.date} ${g.n}인 · 1위 ${g.winners.join(', ')}`;
+    return `<div class="game"><div><div class="meta">${esc(g.date)} · ${g.n}인${tag}</div>
+      <div class="who">${who}</div>${tb}</div>
+      <button class="del" data-id="${esc(g.id)}" data-l="${esc(label)}">삭제</button></div>`;
+  }).join('');
+  $('logList').querySelectorAll('.del').forEach(b => b.onclick = () => delGame(b.dataset.id, b.dataset.l));
+}
+
+renderInput();
+load();
+</script>
+</body>
+</html>
